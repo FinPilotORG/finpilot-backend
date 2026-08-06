@@ -2,6 +2,7 @@ package com.finpilot.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.finpilot.entity.Role;
 
 @Entity
 @Table(name = "users")
@@ -26,8 +27,8 @@ public class User {
     @Column(nullable = false, unique = true, length = 15)
     private String mobileNumber;
 
-    @Column(nullable = false)
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @Column(nullable = false)
     private Boolean active = true;
@@ -102,11 +103,11 @@ public class User {
         this.mobileNumber = mobileNumber;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 

@@ -1,5 +1,7 @@
 package com.finpilot.dto;
 
+import com.finpilot.entity.Role;
+
 public class UserResponse {
 
     private Long id;
@@ -7,7 +9,7 @@ public class UserResponse {
     private String lastName;
     private String email;
     private String mobileNumber;
-    private String role;
+    private Role role;
 
     public UserResponse() {
     }
@@ -52,11 +54,11 @@ public class UserResponse {
         this.mobileNumber = mobileNumber;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 }
