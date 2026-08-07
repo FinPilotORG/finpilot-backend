@@ -1,5 +1,5 @@
 package com.finpilot.service.impl;
-
+import org.springframework.security.crypto.password.PasswordEncoder;
 import com.finpilot.dto.UserRequest;
 import com.finpilot.dto.UserResponse;
 import com.finpilot.entity.User;
@@ -17,9 +17,11 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -34,6 +36,10 @@ public class UserServiceImpl implements UserService {
         }
 
         User user = UserMapper.toEntity(request);
+
+        user.setPassword(
+                passwordEncoder.encode(request.getPassword())
+        );
 
         User savedUser = userRepository.save(user);
 
@@ -83,8 +89,12 @@ public class UserServiceImpl implements UserService {
         user.setEmail(request.getEmail());
         user.setMobileNumber(request.getMobileNumber());
 
-        if (request.getPassword() != null && !request.getPassword().isBlank()) {
-            user.setPassword(request.getPassword());
+        if (request.getPassword() != null
+                && !request.getPassword().isBlank()) {
+
+            user.setPassword(
+                    passwordEncoder.encode(request.getPassword())
+            );
         }
 
         User updatedUser = userRepository.save(user);
@@ -100,5 +110,17 @@ public class UserServiceImpl implements UserService {
                         new UserNotFoundException("User not found with id : " + id));
 
         userRepository.delete(user);
+    }
+    @Override
+    public UserResponse getCurrentUser(String email) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                "User not found with email: " + email
+                        )
+                );
+
+        return UserMapper.toResponse(user);
     }
 }
