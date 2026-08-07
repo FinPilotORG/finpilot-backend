@@ -1,6 +1,6 @@
 package com.finpilot.dto;
 
-import com.finpilot.entity.Role;
+import com.finpilot.enums.Role;
 
 public class UserResponse {
 

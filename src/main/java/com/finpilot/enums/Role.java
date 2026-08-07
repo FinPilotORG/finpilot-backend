@@ -1,4 +1,4 @@
-package com.finpilot.entity;
+package com.finpilot.enums;
 
 public enum Role {
     USER,
