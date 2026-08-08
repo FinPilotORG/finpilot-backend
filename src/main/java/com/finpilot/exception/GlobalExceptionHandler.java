@@ -2,6 +2,7 @@ package com.finpilot.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.finpilot.expense.exception.ExpenseNotFoundException;
@@ -9,27 +10,85 @@ import com.finpilot.expense.exception.ExpenseNotFoundException;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<String> handleUserNotFound(UserNotFoundException ex) {
+    public ResponseEntity<Map<String, Object>> handleUserNotFound(
+            UserNotFoundException ex) {
 
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+        return buildResponse(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage()
+        );
     }
 
     @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ResponseEntity<String> handleEmailExists(EmailAlreadyExistsException ex) {
+    public ResponseEntity<Map<String, Object>> handleEmailExists(
+            EmailAlreadyExistsException ex) {
 
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+        return buildResponse(
+                HttpStatus.CONFLICT,
+                ex.getMessage()
+        );
     }
 
     @ExceptionHandler(MobileNumberAlreadyExistsException.class)
-    public ResponseEntity<String> handleMobileExists(MobileNumberAlreadyExistsException ex) {
+    public ResponseEntity<Map<String, Object>> handleMobileExists(
+            MobileNumberAlreadyExistsException ex) {
 
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+        return buildResponse(
+                HttpStatus.CONFLICT,
+                ex.getMessage()
+        );
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationErrors(
+            MethodArgumentNotValidException ex) {
+
+        Map<String, String> errors = new HashMap<>();
+
+        ex.getBindingResult()
+                .getFieldErrors()
+                .forEach(error ->
+                        errors.put(
+                                error.getField(),
+                                error.getDefaultMessage()
+                        )
+                );
+
+        Map<String, Object> response = new HashMap<>();
+
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", HttpStatus.BAD_REQUEST.value());
+        response.put("message", "Validation failed");
+        response.put("errors", errors);
+
+        return ResponseEntity
+                .badRequest()
+                .body(response);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleException(Exception ex) {
+    public ResponseEntity<Map<String, Object>> handleException(
+            Exception ex) {
 
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return buildResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                ex.getMessage()
+        );
+    }
+
+    private ResponseEntity<Map<String, Object>> buildResponse(
+            HttpStatus status,
+            String message) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        response.put("timestamp", LocalDateTime.now());
+        response.put("status", status.value());
+        response.put("message", message);
+
+        return ResponseEntity
+                .status(status)
+                .body(response);
     }
 
     @ExceptionHandler(ExpenseNotFoundException.class)

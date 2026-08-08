@@ -1,5 +1,5 @@
 package com.finpilot.controller;
-
+import org.springframework.security.core.Authentication;
 import com.finpilot.dto.UserRequest;
 import com.finpilot.dto.UserResponse;
 import com.finpilot.service.UserService;
@@ -53,5 +53,15 @@ public class UserController {
         userService.deleteUser(id);
 
         return ResponseEntity.ok("User deleted successfully.");
+    }
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getCurrentUser(
+            Authentication authentication) {
+
+        String email = authentication.getName();
+
+        return ResponseEntity.ok(
+                userService.getCurrentUser(email)
+        );
     }
 }
