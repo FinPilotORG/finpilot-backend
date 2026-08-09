@@ -119,14 +119,7 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
-    @ExceptionHandler(ExpenseNotFoundException.class)
-    public ResponseEntity<String> handleExpenseNotFound(ExpenseNotFoundException ex){
-        return new ResponseEntity<>(
-                ex.getMessage(),
-                HttpStatus.NOT_FOUND
 
-        );
-    }
     @ExceptionHandler(BudgetNotFoundException.class)
     public ResponseEntity<String> handleBudgetNotFound(BudgetNotFoundException ex){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
