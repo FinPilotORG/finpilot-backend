@@ -15,4 +15,14 @@ public interface ExpenseRepository extends JpaRepository<Expense, Long> {
 
     List<Expense> findByExpenseDate(LocalDate expenseDate);
 
+    List<Expense> findByUserEmail(String email);
+
+    List<Expense> findByUserEmailAndCategory(
+            String email,
+            ExpenseCategory category
+    );
+    List<Expense> findByUserEmailAndExpenseDate(
+            String email,
+            LocalDate expenseDate
+    );
 }

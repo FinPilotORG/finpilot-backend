@@ -41,6 +41,7 @@ public class BudgetServiceImpl implements BudgetService {
                         new RuntimeException("Authenticated user not found"));
     }
 
+
     @Override
     public BudgetResponse createBudget(BudgetRequest request) {
 
@@ -58,12 +59,23 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     public BudgetResponse getBudgetById(Long id) {
 
-        User currentUser = getCurrentUser();
+        Budget budget;
 
-        Budget budget = budgetRepository
-                .findByIdAndUser(id, currentUser)
-                .orElseThrow(() ->
-                        new BudgetNotFoundException(id));
+        if (isAdmin()) {
+
+            budget = budgetRepository.findById(id)
+                    .orElseThrow(() ->
+                            new BudgetNotFoundException(id));
+
+        } else {
+
+            User currentUser = getCurrentUser();
+
+            budget = budgetRepository
+                    .findByIdAndUser(id, currentUser)
+                    .orElseThrow(() ->
+                            new BudgetNotFoundException(id));
+        }
 
         return BudgetMapper.toResponse(budget);
     }
@@ -71,10 +83,20 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     public List<BudgetResponse> getAllBudgets() {
 
-        User currentUser = getCurrentUser();
+        List<Budget> budgets;
 
-        return budgetRepository.findByUser(currentUser)
-                .stream()
+        if (isAdmin()) {
+
+            budgets = budgetRepository.findAll();
+
+        } else {
+
+            User currentUser = getCurrentUser();
+
+            budgets = budgetRepository.findByUser(currentUser);
+        }
+
+        return budgets.stream()
                 .map(BudgetMapper::toResponse)
                 .toList();
     }
@@ -84,12 +106,23 @@ public class BudgetServiceImpl implements BudgetService {
             Long id,
             BudgetRequest request) {
 
-        User currentUser = getCurrentUser();
+        Budget budget;
 
-        Budget budget = budgetRepository
-                .findByIdAndUser(id, currentUser)
-                .orElseThrow(() ->
-                        new BudgetNotFoundException(id));
+        if (isAdmin()) {
+
+            budget = budgetRepository.findById(id)
+                    .orElseThrow(() ->
+                            new BudgetNotFoundException(id));
+
+        } else {
+
+            User currentUser = getCurrentUser();
+
+            budget = budgetRepository
+                    .findByIdAndUser(id, currentUser)
+                    .orElseThrow(() ->
+                            new BudgetNotFoundException(id));
+        }
 
         budget.setName(request.getName());
         budget.setAmount(request.getAmount());
@@ -105,13 +138,34 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     public void deleteBudget(Long id) {
 
-        User currentUser = getCurrentUser();
+        Budget budget;
 
-        Budget budget = budgetRepository
-                .findByIdAndUser(id, currentUser)
-                .orElseThrow(() ->
-                        new BudgetNotFoundException(id));
+        if (isAdmin()) {
+
+            budget = budgetRepository.findById(id)
+                    .orElseThrow(() ->
+                            new BudgetNotFoundException(id));
+
+        } else {
+
+            User currentUser = getCurrentUser();
+
+            budget = budgetRepository
+                    .findByIdAndUser(id, currentUser)
+                    .orElseThrow(() ->
+                            new BudgetNotFoundException(id));
+        }
 
         budgetRepository.delete(budget);
+    }
+    private boolean isAdmin() {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        return authentication.getAuthorities()
+                .stream()
+                .anyMatch(authority ->
+                        authority.getAuthority().equals("ROLE_ADMIN"));
     }
 }
