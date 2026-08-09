@@ -1,5 +1,6 @@
 package com.finpilot.exception;
 
+import com.finpilot.budget.exception.BudgetNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -103,5 +104,9 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND
 
         );
+    }
+    @ExceptionHandler(BudgetNotFoundException.class)
+    public ResponseEntity<String> handleBudgetNotFound(BudgetNotFoundException ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 }
