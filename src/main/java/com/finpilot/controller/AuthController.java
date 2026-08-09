@@ -1,9 +1,6 @@
 package com.finpilot.controller;
 
-import com.finpilot.dto.LoginRequest;
-import com.finpilot.dto.LoginResponse;
-import com.finpilot.dto.RegisterRequest;
-import com.finpilot.dto.RegisterResponse;
+import com.finpilot.dto.*;
 import com.finpilot.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -40,5 +37,27 @@ public class AuthController {
                 authService.login(request);
 
         return ResponseEntity.ok(response);
+    }
+    @PostMapping("/refresh")
+    public ResponseEntity<RefreshTokenResponse> refreshToken(
+            @RequestBody RefreshTokenRequest request) {
+
+        return ResponseEntity.ok(
+                authService.refreshToken(
+                        request.getRefreshToken()
+                )
+        );
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(
+            @RequestBody RefreshTokenRequest request) {
+
+        authService.logout(
+                request.getRefreshToken()
+        );
+
+        return ResponseEntity.ok(
+                "Logout successful"
+        );
     }
 }

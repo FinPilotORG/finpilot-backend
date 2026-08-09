@@ -1,9 +1,7 @@
 package com.finpilot.service.impl;
-
-import com.finpilot.dto.LoginRequest;
-import com.finpilot.dto.LoginResponse;
-import com.finpilot.dto.RegisterRequest;
-import com.finpilot.dto.RegisterResponse;
+import com.finpilot.dto.*;
+import com.finpilot.entity.RefreshToken;
+import com.finpilot.security.service.RefreshTokenService;
 import com.finpilot.entity.User;
 import com.finpilot.enums.Role;
 import com.finpilot.exception.EmailAlreadyExistsException;
@@ -22,6 +20,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthServiceImpl implements AuthService {
 
+    private final RefreshTokenService refreshTokenService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -33,13 +32,15 @@ public class AuthServiceImpl implements AuthService {
             PasswordEncoder passwordEncoder,
             AuthenticationManager authenticationManager,
             JwtService jwtService,
-            CustomUserDetailsService customUserDetailsService) {
+            CustomUserDetailsService customUserDetailsService,
+            RefreshTokenService refreshTokenService) {
 
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.customUserDetailsService = customUserDetailsService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @Override
@@ -105,20 +106,70 @@ public class AuthServiceImpl implements AuthService {
                 )
         );
 
-        // 2. Load user through our CustomUserDetailsService
+        // 2. Load user through CustomUserDetailsService
         UserDetails userDetails =
                 customUserDetailsService.loadUserByUsername(
                         request.getEmail()
                 );
 
-        // 3. Generate JWT
+        // 3. Generate Access JWT
         String token =
                 jwtService.generateToken(userDetails);
 
-        // 4. Return JWT
+        // 4. Find actual User entity
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new RuntimeException("User not found")
+                );
+
+        // 5. Create Refresh Token
+        RefreshToken refreshToken =
+                refreshTokenService.createRefreshToken(user);
+
+        // 6. Return both tokens
         return new LoginResponse(
                 token,
+                refreshToken.getToken(),
                 "Login successful"
+        );
+    }
+    @Override
+    public RefreshTokenResponse refreshToken(String token) {
+
+        // 1. Find refresh token in database
+        RefreshToken refreshToken =
+                refreshTokenService.findByToken(token);
+
+        // 2. Check whether it is expired
+        refreshTokenService.verifyExpiration(refreshToken);
+
+        // 3. Get the user associated with the refresh token
+        User user = refreshToken.getUser();
+
+        // 4. Load UserDetails
+        UserDetails userDetails =
+                customUserDetailsService.loadUserByUsername(
+                        user.getEmail()
+                );
+
+        // 5. Generate a new access token
+        String newAccessToken =
+                jwtService.generateToken(userDetails);
+
+        // 6. Return new access token
+        return new RefreshTokenResponse(
+                newAccessToken,
+                refreshToken.getToken()
+        );
+    }
+    @Override
+    public void logout(String token) {
+
+        RefreshToken refreshToken =
+                refreshTokenService.findByToken(token);
+
+        refreshTokenService.deleteByUserId(
+                refreshToken.getUser().getId()
         );
     }
 }
