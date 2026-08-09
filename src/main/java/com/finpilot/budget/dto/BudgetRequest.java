@@ -1,20 +1,24 @@
 package com.finpilot.budget.dto;
 
 import com.finpilot.enums.BudgetPeriod;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class BudgetRequest {
-
+    @NotBlank
     private String name;
-
+    @NotNull
+    @Positive
     private BigDecimal amount;
-
+    @NotNull
     private BudgetPeriod period;
-
+    @NotNull
     private LocalDate startDate;
-
+    @NotNull
     private LocalDate endDate;
 
     public BudgetRequest() {

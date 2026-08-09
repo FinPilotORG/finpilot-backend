@@ -2,6 +2,7 @@ package com.finpilot.budget.service.impl;
 
 import com.finpilot.budget.dto.BudgetRequest;
 import com.finpilot.budget.dto.BudgetResponse;
+import com.finpilot.budget.exception.BudgetNotFoundException;
 import com.finpilot.budget.mapper.BudgetMapper;
 import com.finpilot.budget.repository.BudgetRepository;
 import com.finpilot.budget.service.BudgetService;
@@ -62,7 +63,7 @@ public class BudgetServiceImpl implements BudgetService {
         Budget budget = budgetRepository
                 .findByIdAndUser(id, currentUser)
                 .orElseThrow(() ->
-                        new RuntimeException("Budget not found"));
+                        new BudgetNotFoundException(id));
 
         return BudgetMapper.toResponse(budget);
     }
@@ -88,7 +89,7 @@ public class BudgetServiceImpl implements BudgetService {
         Budget budget = budgetRepository
                 .findByIdAndUser(id, currentUser)
                 .orElseThrow(() ->
-                        new RuntimeException("Budget not found"));
+                        new BudgetNotFoundException(id));
 
         budget.setName(request.getName());
         budget.setAmount(request.getAmount());
@@ -109,7 +110,7 @@ public class BudgetServiceImpl implements BudgetService {
         Budget budget = budgetRepository
                 .findByIdAndUser(id, currentUser)
                 .orElseThrow(() ->
-                        new RuntimeException("Budget not found"));
+                        new BudgetNotFoundException(id));
 
         budgetRepository.delete(budget);
     }
