@@ -1,5 +1,5 @@
 package com.finpilot.expense.entity;
-
+import com.finpilot.entity.User;
 import com.finpilot.expense.enums.ExpenseCategory;
 import jakarta.persistence.*;
 
@@ -30,6 +30,10 @@ public class Expense {
 
     @Column(nullable = false)
     private LocalDate expenseDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(nullable = false,updatable = false)
     private LocalDateTime createdAt;
@@ -99,6 +103,15 @@ public class Expense {
         this.expenseDate = expenseDate;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -114,4 +127,6 @@ public class Expense {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+
 }
