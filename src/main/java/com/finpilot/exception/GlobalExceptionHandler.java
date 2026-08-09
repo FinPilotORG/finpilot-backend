@@ -8,7 +8,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import com.finpilot.expense.exception.ExpenseNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -119,14 +118,7 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
-    @ExceptionHandler(ExpenseNotFoundException.class)
-    public ResponseEntity<String> handleExpenseNotFound(ExpenseNotFoundException ex){
-        return new ResponseEntity<>(
-                ex.getMessage(),
-                HttpStatus.NOT_FOUND
 
-        );
-    }
     @ExceptionHandler(BudgetNotFoundException.class)
     public ResponseEntity<String> handleBudgetNotFound(BudgetNotFoundException ex){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
