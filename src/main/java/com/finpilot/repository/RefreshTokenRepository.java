@@ -1,5 +1,5 @@
 package com.finpilot.repository;
-
+import org.springframework.transaction.annotation.Transactional;
 import com.finpilot.entity.RefreshToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,5 +10,6 @@ public interface RefreshTokenRepository
 
     Optional<RefreshToken> findByToken(String token);
 
+    @Transactional
     void deleteByUserId(Long userId);
 }
