@@ -1,22 +1,19 @@
 package com.finpilot.dto;
 
-public class LoginResponse {
+public class RefreshTokenResponse {
 
     private String token;
     private String refreshToken;
-    private String message;
 
-    public LoginResponse() {
+    public RefreshTokenResponse() {
     }
 
-    public LoginResponse(
+    public RefreshTokenResponse(
             String token,
-            String refreshToken,
-            String message) {
+            String refreshToken) {
 
         this.token = token;
         this.refreshToken = refreshToken;
-        this.message = message;
     }
 
     public String getToken() {
@@ -33,13 +30,5 @@ public class LoginResponse {
 
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
     }
 }

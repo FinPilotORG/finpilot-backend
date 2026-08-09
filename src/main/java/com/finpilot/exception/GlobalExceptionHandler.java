@@ -1,8 +1,10 @@
 package com.finpilot.exception;
 
 import com.finpilot.budget.exception.BudgetNotFoundException;
+import com.finpilot.expense.exception.ExpenseNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -70,6 +72,26 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .badRequest()
                 .body(response);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDenied(
+            AccessDeniedException ex) {
+
+        return buildResponse(
+                HttpStatus.FORBIDDEN,
+                ex.getMessage()
+        );
+    }
+
+    @ExceptionHandler(ExpenseNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleExpenseNotFound(
+            ExpenseNotFoundException ex) {
+
+        return buildResponse(
+                HttpStatus.NOT_FOUND,
+                ex.getMessage()
+        );
     }
 
     @ExceptionHandler(Exception.class)
