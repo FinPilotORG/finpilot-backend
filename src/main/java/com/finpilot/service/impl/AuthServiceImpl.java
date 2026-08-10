@@ -1,6 +1,8 @@
 package com.finpilot.service.impl;
 import com.finpilot.dto.*;
+import com.finpilot.entity.PasswordResetToken;
 import com.finpilot.entity.RefreshToken;
+import com.finpilot.repository.PasswordResetTokenRepository;
 import com.finpilot.security.service.RefreshTokenService;
 import com.finpilot.entity.User;
 import com.finpilot.enums.Role;
@@ -17,6 +19,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Service
 public class AuthServiceImpl implements AuthService {
 
@@ -26,6 +31,7 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final CustomUserDetailsService customUserDetailsService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     public AuthServiceImpl(
             UserRepository userRepository,
@@ -33,7 +39,8 @@ public class AuthServiceImpl implements AuthService {
             AuthenticationManager authenticationManager,
             JwtService jwtService,
             CustomUserDetailsService customUserDetailsService,
-            RefreshTokenService refreshTokenService) {
+            RefreshTokenService refreshTokenService, PasswordResetTokenRepository passwordResetTokenRepository) {
+
 
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -41,6 +48,7 @@ public class AuthServiceImpl implements AuthService {
         this.jwtService = jwtService;
         this.customUserDetailsService = customUserDetailsService;
         this.refreshTokenService = refreshTokenService;
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
     }
 
     @Override
@@ -171,5 +179,71 @@ public class AuthServiceImpl implements AuthService {
         refreshTokenService.deleteByUserId(
                 refreshToken.getUser().getId()
         );
+    }
+    @Override
+    public void forgotPassword(ForgotPasswordRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new RuntimeException("User not found with this email"));
+
+        // Remove any previous reset token
+        passwordResetTokenRepository.deleteByUserId(user.getId());
+
+        // Generate secure random token
+        String token = UUID.randomUUID().toString();
+
+        PasswordResetToken passwordResetToken =
+                new PasswordResetToken();
+
+        passwordResetToken.setToken(token);
+        passwordResetToken.setUser(user);
+
+        // Token valid for 15 minutes
+        passwordResetToken.setExpiryDate(
+                LocalDateTime.now().plusMinutes(15)
+        );
+
+        passwordResetToken.setUsed(false);
+
+        passwordResetTokenRepository.save(passwordResetToken);
+
+        System.out.println("PASSWORD RESET TOKEN: " + token);
+    }
+    @Override
+    public void resetPassword(ResetPasswordRequest request) {
+
+        PasswordResetToken resetToken =
+                passwordResetTokenRepository
+                        .findByToken(request.getToken())
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Invalid password reset token"));
+
+        if (resetToken.isUsed()) {
+            throw new RuntimeException(
+                    "Password reset token has already been used");
+        }
+
+        if (resetToken.getExpiryDate()
+                .isBefore(LocalDateTime.now())) {
+
+            throw new RuntimeException(
+                    "Password reset token has expired");
+        }
+
+        User user = resetToken.getUser();
+
+        // Encrypt the new password
+        user.setPassword(
+                passwordEncoder.encode(request.getNewPassword())
+        );
+
+        userRepository.save(user);
+
+        // Prevent token reuse
+        resetToken.setUsed(true);
+
+        passwordResetTokenRepository.save(resetToken);
     }
 }
