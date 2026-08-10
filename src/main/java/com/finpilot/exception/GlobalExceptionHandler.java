@@ -8,7 +8,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
+import com.finpilot.exception.InvalidPasswordResetTokenException;
+import com.finpilot.exception.PasswordResetTokenExpiredException;
+import com.finpilot.exception.PasswordResetTokenAlreadyUsedException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -122,5 +124,34 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BudgetNotFoundException.class)
     public ResponseEntity<String> handleBudgetNotFound(BudgetNotFoundException ex){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+    @ExceptionHandler(InvalidPasswordResetTokenException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidPasswordResetToken(
+            InvalidPasswordResetTokenException ex) {
+
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage()
+        );
+    }
+
+    @ExceptionHandler(PasswordResetTokenExpiredException.class)
+    public ResponseEntity<Map<String, Object>> handleExpiredPasswordResetToken(
+            PasswordResetTokenExpiredException ex) {
+
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage()
+        );
+    }
+
+    @ExceptionHandler(PasswordResetTokenAlreadyUsedException.class)
+    public ResponseEntity<Map<String, Object>> handleUsedPasswordResetToken(
+            PasswordResetTokenAlreadyUsedException ex) {
+
+        return buildResponse(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage()
+        );
     }
 }
